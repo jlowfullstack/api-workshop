@@ -1,0 +1,153 @@
+openapi: "3.0.3"
+info:
+  title: "Zips REST API"
+  description: "My first Zips REST API"
+  version: "v1.0"
+
+# one -url for each server
+servers:  
+  - url: http://localhost:3000
+    description: Development Server
+
+# Added in Workshop03
+components:
+  schemas:
+     # added state schema in Workshop03
+    state:
+      type: string
+      enum: [ "MA", "RI", "NH", "ME", "VT", "CT", "NY", "NJ", "PA", 
+            "DE", "DC", "MD", "VA", "WV", "NC", "SC", "GA", "FL", 
+            "AL", "TN", "MS", "KY", "OH", "IN", "MI", "IA", "WI",
+            "MN", "SD", "ND", "MT", "IL", "MO", "KS", "NE", "LA",
+            "AR", "OK", "TX", "CO", "WY", "ID", "UT", "AZ", "NM",
+            "NV", "CA", "HI", "OR", "WA", "AK"]
+    
+    city-form:
+      type: object
+      required: ["city", "pop", "lat", "long"]
+      properties:
+        city:
+          type: string
+          description: City name
+        pop:
+          type: number
+          description: City's population
+
+        # or concatenated
+        # loc:
+        # type: string
+        # description lat, long in CSV
+        
+        lat:
+          type: number
+          description: City's latitude
+
+        long:
+          type: number
+          description: City's longitude
+
+        state:
+          enum: ["MA", "RI", "NH", "ME", "VT", "CT", "NY", "NJ", "PA", 
+                "DE", "DC", "MD", "VA", "WV", "NC", "SC", "GA", "FL", 
+                "AL", "TN", "MS", "KY", "OH", "IN", "MI", "IA", "WI",
+                "MN", "SD", "ND", "MT", "IL", "MO", "KS", "NE", "LA",
+                "AR", "OK", "TX", "CO", "WY", "ID", "UT", "AZ", "NM",
+                "NV", "CA", "HI", "OR", "WA", "AK"]
+
+    city:
+      type: object
+      properties: 
+        _id:
+          type: string
+        city:
+          type: string
+          description: "City name"
+        loc:
+          type: array
+          items:
+            type: number
+          maxItems: 2
+          minItems: 2
+        pop:
+          type: number
+          minimum: 10
+        state:
+          type: string
+          enum: ["MA", "RI", "NH", "ME", "VT", "CT", "NY", "NJ", "PA", 
+                "DE", "DC", "MD", "VA", "WV", "NC", "SC", "GA", "FL", 
+                "AL", "TN", "MS", "KY", "OH", "IN", "MI", "IA", "WI",
+                "MN", "SD", "ND", "MT", "IL", "MO", "KS", "NE", "LA",
+                "AR", "OK", "TX", "CO", "WY", "ID", "UT", "AZ", "NM",
+                "NV", "CA", "HI", "OR", "WA", "AK"]
+
+paths:
+  /api/states:
+    get:
+      description: "Get a list of all the states"
+      operationId: getStates
+
+      # responses always require descriptions
+      responses:
+        '200':
+          description: Default result representation
+          content:
+            application/json: 
+              schema: 
+                $ref: "#/components/schemas/city"
+                type: array
+                items: 
+                  type: string
+
+  /api/city:
+    post:
+      description: "Add a new city"
+      operationId: addNewCity
+      requestBody:
+        required: true
+        # Content-Type
+        content: 
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/city-form"
+          application/json:
+            schema:
+              $ref: "#/components/schemas/city"
+      responses:
+        201: 
+          description: "Success"
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required: 
+                  ["message"]
+
+
+
+  /api/state/{stateId}:
+    get:
+      description: "Get a list of cities by state, 10 results at a time"
+      operationId: get10CitiesFromState
+      parameters:
+      - name: stateId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/state"
+      - name: offset
+        in: query
+        schema:
+          type: number
+          minimum: 0
+
+      responses:
+        '200':
+          description: Successful results
+          content:
+            application/json:
+              schema: 
+                type: array
+          
